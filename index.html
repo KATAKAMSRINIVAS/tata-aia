@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="K. Srinivasa Rao - Insurance Advisor at TATA-AIA" />
+  <title>TATA-AIA Advisor | K. Srinivasa Rao</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="container">
+      <a href="#home" class="brand">TATA-AIA Advisor</a>
+      <button class="nav-toggle" aria-label="Toggle navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+      <nav class="main-nav">
+        <a href="#home">Home</a>
+        <a href="#policies">Policies</a>
+        <a href="#about">About</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section id="home" class="hero">
+      <div class="hero-grid container">
+        <div class="hero-copy">
+          <span class="eyebrow">Insurance Advisory</span>
+          <h1>K. Srinivasa Rao (Advisor)</h1>
+          <p class="hero-description">Secure your family’s future today with personalized plans from a trusted TATA-AIA advisor.</p>
+          <div class="hero-actions">
+            <a href="#policies" class="cta-button">Explore Plans</a>
+            <button class="secondary-button">Book a Call</button>
+          </div>
+        </div>
+
+        <div class="hero-visual">
+          <div class="profile-card">
+            <img src="advisor-placeholder.svg" alt="K. Srinivasa Rao" class="profile-avatar">
+            <div class="profile-info">
+              <span>Advisor</span>
+              <h2>K. Srinivasa Rao</h2>
+              <p>Trusted Insurance Advisor with over 12 years of experience helping families choose the right protection.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="about" class="section about-section">
+      <div class="container section-grid">
+        <div>
+          <h2>About Me</h2>
+          <p>With a strong focus on family protection and long-term stability, I help clients choose the right insurance plan that matches their goals, budget, and future ambitions.</p>
+        </div>
+        <div class="about-cards">
+          <article class="info-card">
+            <h3>12+ Years Experience</h3>
+            <p>Providing insurance counsel and personalized solutions across multiple life stages.</p>
+          </article>
+          <article class="info-card">
+            <h3>Trusted Guidance</h3>
+            <p>Transparent recommendations built on trust, reliability, and long-term planning.</p>
+          </article>
+          <article class="info-card">
+            <h3>Customer-First Approach</h3>
+            <p>Every plan is chosen to align with your financial comfort and family needs.</p>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="policies" class="section policies-section">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <h2>Policy Categories</h2>
+            <p>Explore tailored protection plans for every stage of life.</p>
+          </div>
+        </div>
+
+        <div class="policies-grid">
+          <article class="policy-card" data-policy="term">
+            <h3>Term Plans</h3>
+            <p>Pure life cover designed to protect your family’s financial future.</p>
+            <div class="card-actions">
+              <button class="policy-button view-details" data-policy="term">View Details</button>
+              <button class="policy-button download-brochure" data-policy="term">Download Brochure</button>
+            </div>
+          </article>
+
+          <article class="policy-card" data-policy="savings">
+            <h3>Savings Plans</h3>
+            <p>Balanced plans that help you save while providing life protection.</p>
+            <div class="card-actions">
+              <button class="policy-button view-details" data-policy="savings">View Details</button>
+              <button class="policy-button download-brochure" data-policy="savings">Download Brochure</button>
+            </div>
+          </article>
+
+          <article class="policy-card" data-policy="children">
+            <h3>Children Plans</h3>
+            <p>Secure your child’s education and future with dedicated coverage.</p>
+            <div class="card-actions">
+              <button class="policy-button view-details" data-policy="children">View Details</button>
+              <button class="policy-button download-brochure" data-policy="children">Download Brochure</button>
+            </div>
+          </article>
+
+          <article class="policy-card" data-policy="retirement">
+            <h3>Retirement Plans</h3>
+            <p>Plan today for a confident and comfortable retirement tomorrow.</p>
+            <div class="card-actions">
+              <button class="policy-button view-details" data-policy="retirement">View Details</button>
+              <button class="policy-button download-brochure" data-policy="retirement">Download Brochure</button>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section id="contact" class="section contact-section">
+      <div class="container contact-grid">
+        <div class="contact-copy">
+          <h2>Talk to Me</h2>
+          <p>Complete the form below to receive a customized policy recommendation and brochure.</p>
+          <div class="contact-details">
+            <div>
+              <strong>Email</strong>
+              <p>katakam_srinivas@hotmail.com</p>
+            </div>
+            <div>
+              <strong>Phone</strong>
+              <p>+91 9989631000</p>
+            </div>
+          </div>
+        </div>
+
+        <form id="lead-form" class="lead-form">
+          <label for="name">Name</label>
+          <input id="name" name="name" type="text" required placeholder="Your full name" />
+
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required placeholder="you@example.com" />
+
+          <label for="phone">Phone</label>
+          <input id="phone" name="phone" type="tel" required placeholder="+91 98765 43210" />
+
+          <label for="policy">Policy Selected</label>
+          <input id="policy" name="policy" type="text" readonly placeholder="Select a policy from above" />
+
+          <button type="submit" class="cta-button submit-button">Submit</button>
+          <p class="success-message hidden">Thank you! Your request has been submitted successfully.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 K. Srinivasa Rao | TATA-AIA Advisor</p>
+    </div>
+  </footer>
+
+  <div id="policy-modal" class="modal hidden" aria-hidden="true">
+    <div class="modal-content">
+      <button type="button" class="modal-close" aria-label="Close modal">×</button>
+      <span class="modal-tag">Policy Details</span>
+      <h3 class="modal-title"></h3>
+      <p class="modal-description"></p>
+      <div>
+        <h4>Benefits</h4>
+        <ul class="modal-benefits"></ul>
+      </div>
+      <div>
+        <h4>Eligibility</h4>
+        <p class="modal-eligibility"></p>
+      </div>
+      <div class="modal-actions">
+        <button id="modal-download" type="button" class="policy-button">Download PDF</button>
+        <button id="modal-interested" type="button" class="cta-button">I'm Interested</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

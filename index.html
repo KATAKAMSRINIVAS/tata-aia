@@ -6,6 +6,7 @@
   <meta name="description" content="K. Srinivasa Rao - Insurance Advisor at TATA-AIA" />
   <title>TATA-AIA Advisor | K. Srinivasa Rao</title>
   <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -86,6 +87,7 @@
         <div class="policies-grid">
           <article class="policy-card" data-policy="term">
             <h3>Term Plans</h3>
+            <h4>Description</h4>
             <p>Pure life cover designed to protect your family’s financial future.</p>
             <div class="card-actions">
               <button class="policy-button view-details" data-policy="term">View Details</button>
@@ -95,6 +97,7 @@
 
           <article class="policy-card" data-policy="savings">
             <h3>Savings Plans</h3>
+            <h4>Description</h4>
             <p>Balanced plans that help you save while providing life protection.</p>
             <div class="card-actions">
               <button class="policy-button view-details" data-policy="savings">View Details</button>
@@ -104,6 +107,7 @@
 
           <article class="policy-card" data-policy="children">
             <h3>Children Plans</h3>
+            <h4>Description</h4>
             <p>Secure your child’s education and future with dedicated coverage.</p>
             <div class="card-actions">
               <button class="policy-button view-details" data-policy="children">View Details</button>
@@ -113,6 +117,7 @@
 
           <article class="policy-card" data-policy="retirement">
             <h3>Retirement Plans</h3>
+            <h4>Description</h4>
             <p>Plan today for a confident and comfortable retirement tomorrow.</p>
             <div class="card-actions">
               <button class="policy-button view-details" data-policy="retirement">View Details</button>
@@ -155,6 +160,10 @@
 
           <button type="submit" class="cta-button submit-button">Submit</button>
           <p class="success-message hidden">Thank you! Your request has been submitted successfully.</p>
+          <div id="form-status" class="form-status hidden">
+            <div id="form-spinner" class="spinner hidden" aria-hidden="true"></div>
+            <p id="form-message" class="form-message"></p>
+          </div>
         </form>
       </div>
     </section>
@@ -184,9 +193,15 @@
         <button id="modal-download" type="button" class="policy-button">Download PDF</button>
         <button id="modal-interested" type="button" class="cta-button">I'm Interested</button>
       </div>
+      <div id="modal-status" class="modal-status hidden">
+        <div id="submission-spinner" class="spinner hidden" aria-hidden="true"></div>
+        <p id="submission-message" class="submission-message"></p>
+      </div>
     </div>
   </div>
 
+  <script src="supabase-config.js"></script>
+  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

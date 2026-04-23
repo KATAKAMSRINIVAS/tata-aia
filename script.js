@@ -14,6 +14,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const modalClose = modal.querySelector(".modal-close");
   const modalDownload = document.getElementById("modal-download");
   const modalInterested = document.getElementById("modal-interested");
+  const modalStatus = document.getElementById("modal-status");
+  const submissionSpinner = document.getElementById("submission-spinner");
+  const submissionMessage = document.getElementById("submission-message");
+  const nameField = document.getElementById("name");
+  const emailField = document.getElementById("email");
+  const phoneField = document.getElementById("phone");
+  const formStatus = document.getElementById("form-status");
+  const formSpinner = document.getElementById("form-spinner");
+  const formMessage = document.getElementById("form-message");
+
+  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  let activePolicyKey = null;
 
   const policyDetails = {
     term: {
@@ -108,11 +120,15 @@ document.addEventListener("DOMContentLoaded", () => {
   const openModal = (policyKey) => {
     const policy = policyDetails[policyKey];
     if (!policy) return;
+    activePolicyKey = policyKey;
     modalTitle.textContent = policy.title;
     modalDescription.textContent = policy.description;
     modalBenefits.innerHTML = policy.benefits.map((item) => `<li>${item}</li>`).join("");
     modalEligibility.textContent = policy.eligibility;
     policyField.value = policy.title;
+    modalStatus.classList.add("hidden");
+    submissionSpinner.classList.add("hidden");
+    submissionMessage.textContent = "";
     modal.classList.remove("hidden");
     modal.setAttribute("aria-hidden", "false");
   };
@@ -120,6 +136,136 @@ document.addEventListener("DOMContentLoaded", () => {
   const closeModal = () => {
     modal.classList.add("hidden");
     modal.setAttribute("aria-hidden", "true");
+    modalStatus.classList.add("hidden");
+    submissionSpinner.classList.add("hidden");
+    submissionMessage.textContent = "";
+    activePolicyKey = null;
+  };
+
+  const setModalLoading = (isLoading) => {
+    submissionSpinner.classList.toggle("hidden", !isLoading);
+    modalDownload.disabled = isLoading;
+    modalInterested.disabled = isLoading;
+
+    if (isLoading) {
+      submissionMessage.textContent = "Submitting policy request...";
+      submissionMessage.classList.remove("error");
+      modalStatus.classList.remove("hidden");
+    }
+  };
+
+  const showModalFeedback = (message, isError = false) => {
+    submissionSpinner.classList.add("hidden");
+    modalStatus.classList.remove("hidden");
+    submissionMessage.textContent = message;
+    submissionMessage.classList.toggle("error", isError);
+    modalDownload.disabled = false;
+    modalInterested.disabled = false;
+  };
+
+  const clearFormFields = () => {
+    form.reset();
+    policyField.value = "";
+  };
+
+  const downloadPolicyPdf = async (policyName) => {
+    const response = await fetch(`${BACKEND_URL}/api/policy-pdf/download`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: policyName })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to download PDF: ${response.status} ${response.statusText} - ${errorText}`);
+    }
+
+    const { pdf_url, download_count } = await response.json();
+    if (!pdf_url) {
+      throw new Error("No PDF URL returned from the backend route.");
+    }
+
+    return { pdf_url, download_count };
+  };
+
+  const setFormLoading = (isLoading) => {
+    formSpinner.classList.toggle("hidden", !isLoading);
+    form.querySelector(".submit-button").disabled = isLoading;
+
+    if (isLoading) {
+      formMessage.textContent = "Submitting lead...";
+      formMessage.classList.remove("error");
+      formStatus.classList.remove("hidden");
+    }
+  };
+
+  const formatSupabaseError = (error) => {
+    const rawMessage = error?.message || String(error || "Unknown error");
+    if (rawMessage.includes("Could not find the 'full_name' column")) {
+      return "Lead submission failed: Supabase table schema mismatch. The 'policy_leads' table does not contain the expected 'full_name' column.";
+    }
+    if (rawMessage.includes("Could not find the 'email' column")) {
+      return "Lead submission failed: Supabase table schema mismatch. The 'policy_leads' table does not contain the expected 'email' column.";
+    }
+    if (rawMessage.includes("Could not find the 'phone' column")) {
+      return "Lead submission failed: Supabase table schema mismatch. The 'policy_leads' table does not contain the expected 'phone' column.";
+    }
+    if (rawMessage.includes("Could not find the 'policy_selected' column")) {
+      return "Lead submission failed: Supabase table schema mismatch. The 'policy_leads' table does not contain the expected 'policy_selected' column.";
+    }
+    if (rawMessage.includes("schema cache")) {
+      return "Lead submission failed: Supabase schema cache error. Please check your table columns and refresh the Supabase schema.";
+    }
+    return rawMessage;
+  };
+
+  const showFormFeedback = (message, isError = false) => {
+    formSpinner.classList.add("hidden");
+    formStatus.classList.remove("hidden");
+    formMessage.textContent = message;
+    formMessage.classList.toggle("error", isError);
+    form.querySelector(".submit-button").disabled = false;
+  };
+
+  const submitLead = async () => {
+    const payload = {
+      category_id: null,
+      category_name: policyField.value,
+      full_name: nameField.value.trim(),
+      email: emailField.value.trim(),
+      phone: phoneField.value.trim(),
+      policy_selected: policyField.value,
+      message: "Interested in this policy",
+      status: "new",
+      source_page: window.location.href,
+      created_at: new Date().toISOString()
+    };
+
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/policy_leads`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        Prefer: "return=representation"
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      let errorMessage = `Lead submission failed: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        if (errorData?.message) {
+          errorMessage = errorData.message;
+        }
+      } catch (_e) {
+        // ignore JSON parse errors
+      }
+      throw new Error(errorMessage);
+    }
+
+    return await response.json();
   };
 
   document.querySelectorAll(".view-details").forEach((button) => {
@@ -139,8 +285,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  modalDownload.addEventListener("click", () => {
-    window.open("brochure.html", "_blank");
+  modalDownload.addEventListener("click", async () => {
+    if (!activePolicyKey) {
+      showModalFeedback("Please open a policy before downloading the brochure.", true);
+      return;
+    }
+
+    try {
+      const policyTitle = policyDetails[activePolicyKey]?.title || "";
+      setModalLoading(true);
+      const { pdf_url, download_count } = await downloadPolicyPdf(policyTitle);
+      const downloadFilename = "policy-brochure.pdf"; // Assuming it's a PDF
+      const anchor = document.createElement("a");
+      anchor.href = pdf_url;
+      anchor.download = downloadFilename;
+      anchor.target = "_blank";
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+
+      showModalFeedback(`Brochure downloaded! (Total downloads: ${download_count})`);
+    } catch (error) {
+      console.error("PDF download error:", error);
+      showModalFeedback(`Download failed: ${error.message}`, true);
+    } finally {
+      setModalLoading(false);
+    }
   });
 
   modalInterested.addEventListener("click", () => {
@@ -148,18 +318,24 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById("contact").scrollIntoView({ behavior: "smooth" });
   });
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) {
       return;
     }
-    successMessage.classList.remove("hidden");
-    successMessage.textContent = "Thank you, your request has been submitted successfully.";
-    form.reset();
-    policyField.value = "";
-    setTimeout(() => {
-      successMessage.classList.add("hidden");
-    }, 6000);
+
+    try {
+      setFormLoading(true);
+      await submitLead();
+      showFormFeedback("Thank you! Your lead has been submitted successfully.");
+      form.reset();
+      policyField.value = "";
+    } catch (error) {
+      console.error("Supabase lead submission error:", error);
+      showFormFeedback(`Submission failed: ${formatSupabaseError(error)}`, true);
+    } finally {
+      setFormLoading(false);
+    }
   });
 
   window.addEventListener("scroll", updateActiveLinkOnScroll);

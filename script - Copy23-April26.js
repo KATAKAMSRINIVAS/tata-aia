@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const downloadPolicyPdf = async (policyName) => {
-    const response = await fetch("https://tata-aia-eta.vercel.app/api/policy-pdf/download", {
+    const response = await fetch(`${BACKEND_URL}/api/policy-pdf/download`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name: policyName })

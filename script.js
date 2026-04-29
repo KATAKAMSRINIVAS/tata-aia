@@ -1,103 +1,169 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const navLinks = document.querySelectorAll(".main-nav a");
-  const navToggle = document.querySelector(".nav-toggle");
-  const mainNav = document.querySelector(".main-nav");
-  const sections = document.querySelectorAll("main section");
-  const policyField = document.getElementById("policy");
-  const form = document.getElementById("lead-form");
+
+  // ── Supabase client ──────────────────────────────────────────────────────────
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  // ── DOM refs ─────────────────────────────────────────────────────────────────
+  const navLinks       = document.querySelectorAll(".main-nav a");
+  const navToggle      = document.querySelector(".nav-toggle");
+  const mainNav        = document.querySelector(".main-nav");
+  const sections       = document.querySelectorAll("main section");
+  const policyField    = document.getElementById("policy");
+  const form           = document.getElementById("lead-form");
   const successMessage = document.querySelector(".success-message");
-  const modal = document.getElementById("policy-modal");
-  const modalTitle = modal.querySelector(".modal-title");
-  const modalDescription = modal.querySelector(".modal-description");
-  const modalBenefits = modal.querySelector(".modal-benefits");
-  const modalEligibility = modal.querySelector(".modal-eligibility");
-  const modalClose = modal.querySelector(".modal-close");
-  const modalDownload = document.getElementById("modal-download");
-  const modalInterested = document.getElementById("modal-interested");
-  const modalStatus = document.getElementById("modal-status");
-  const submissionSpinner = document.getElementById("submission-spinner");
-  const submissionMessage = document.getElementById("submission-message");
-  const nameField = document.getElementById("name");
-  const emailField = document.getElementById("email");
-  const phoneField = document.getElementById("phone");
-  const formStatus = document.getElementById("form-status");
-  const formSpinner = document.getElementById("form-spinner");
-  const formMessage = document.getElementById("form-message");
 
-  const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-  let activePolicyKey = null;
+  const policyTitles = {
+    term:       "Term Plans",
+    savings:    "Savings Plans",
+    children:   "Children Plans",
+    retirement: "Retirement Plans"
+  };
 
-  const policyDetails = {
+  // ── Brochure content for each policy (used for offline .html download) ───────
+  const brochureData = {
     term: {
-      title: "Term Plans",
+      title:       "Term Plans",
       description: "Term insurance offers high-value protection for your family during the years they need it most.",
-      benefits: [
-        "Large life cover at an affordable premium",
-        "Financial protection for dependents",
-        "Flexible policy term and sum assured options"
-      ],
+      benefits:    ["Large life cover at an affordable premium", "Financial protection for dependents", "Flexible policy term and sum assured options"],
       eligibility: "Available for individuals aged 18 to 65. Ideal for salaried professionals and family providers."
     },
     savings: {
-      title: "Savings Plans",
+      title:       "Savings Plans",
       description: "Build a disciplined savings habit while maintaining protection through a plan designed for long-term goals.",
-      benefits: [
-        "Regular returns with insurance cover",
-        "Loyalty bonuses and maturity benefits",
-        "Helps meet future goals with disciplined savings"
-      ],
-      eligibility: "Suitable for individuals looking for life cover plus savings. Recommended for age 25 to 55."
+      benefits:    ["Regular returns with insurance cover", "Loyalty bonuses and maturity benefits", "Helps meet future goals with disciplined savings"],
+      eligibility: "Suitable for individuals aged 25 to 55 looking for life cover plus savings."
     },
     children: {
-      title: "Children Plans",
-      description: "Protect your child’s future with a plan that supports education, milestones, and long-term security.",
-      benefits: [
-        "Funding for education and milestones",
-        "Growth with guaranteed benefits",
-        "Security even in the event of a guardian’s loss"
-      ],
+      title:       "Children Plans",
+      description: "Protect your child's future with a plan that supports education, milestones, and long-term security.",
+      benefits:    ["Funding for education and milestones", "Guaranteed growth with maturity benefits", "Security even in the event of a guardian's loss"],
       eligibility: "Designed for parents and guardians. Covers children from birth through early adulthood."
     },
     retirement: {
-      title: "Retirement Plans",
+      title:       "Retirement Plans",
       description: "Plan for a comfortable retirement with a strategy that creates future income and preserves your lifestyle.",
-      benefits: [
-        "Steady retirement income",
-        "Tax-efficient savings",
-        "Financial independence in later years"
-      ],
+      benefits:    ["Steady retirement income", "Tax-efficient savings", "Financial independence in later years"],
       eligibility: "Ideal for individuals aged 30 to 55 who want to secure their retirement lifestyle."
     }
   };
 
+  // ── Build a self-contained brochure HTML string ──────────────────────────────
+  function buildBrochureHTML(slug) {
+    const d = brochureData[slug];
+    if (!d) return null;
+    return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${d.title} - TATA-AIA Insurance</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+    :root { --primary:#1E3A8A; --bg:#f8fafc; --muted:#475569; --card:#ffffff; --radius:20px; }
+    *{box-sizing:border-box;}
+    body{margin:0;padding:2rem;font-family:'Inter',sans-serif;background:var(--bg);color:#0f172a;line-height:2;word-wrap:break-word;}
+    h1{font-family:'Playfair Display',serif;font-size:2.5rem;color:var(--primary);margin-bottom:0.25rem;}
+    h2{font-family:'Playfair Display',serif;font-size:1.5rem;color:var(--primary);margin-bottom:0.5rem;}
+    p,li{font-size:1rem;color:var(--muted);margin:0.5rem 0;}
+    ul{padding-left:1.25rem;margin:0.5rem 0 1rem;}
+    .section{background:var(--card);border-radius:var(--radius);padding:1.5rem;box-shadow:0 12px 30px rgba(15,23,42,0.08);margin-bottom:1.25rem;}
+    .badge{display:inline-block;background:var(--primary);color:#fff;font-size:0.7rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;padding:0.3rem 0.85rem;border-radius:999px;margin-bottom:1rem;}
+    .contact{margin-top:1.5rem;padding:1.25rem;background:rgba(30,58,138,0.07);border-radius:var(--radius);}
+    .contact strong{display:block;color:var(--primary);margin-bottom:0.4rem;}
+    .footer{margin-top:2rem;text-align:center;font-size:0.8rem;color:#94a3b8;}
+  </style>
+</head>
+<body>
+  <div class="badge">TATA-AIA Insurance</div>
+  <h1>${d.title}</h1>
+  <p style="color:#64748b;margin-bottom:1.5rem;">Official Brochure &mdash; K. Srinivasa Rao, Advisor</p>
+
+  <div class="section">
+    <h2>About This Plan</h2>
+    <p>${d.description}</p>
+  </div>
+
+  <div class="section">
+    <h2>Key Benefits</h2>
+    <ul>${d.benefits.map(b => `<li>${b}</li>`).join("")}</ul>
+  </div>
+
+  <div class="section">
+    <h2>Eligibility</h2>
+    <p>${d.eligibility}</p>
+  </div>
+
+  <div class="contact">
+    <strong>Contact Your Advisor</strong>
+    <p>K. Srinivasa Rao &mdash; TATA-AIA Insurance</p>
+    <p>Email: katakam_srinivas@hotmail.com</p>
+    <p>Phone: +91 9989631000</p>
+  </div>
+
+  <div class="footer">&copy; ${new Date().getFullYear()} TATA-AIA | Generated on ${new Date().toLocaleDateString("en-IN", {day:"2-digit",month:"long",year:"numeric"})}</div>
+
+  <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:2rem;">
+    <button onclick="saveBrochure()" style="background:#1E3A8A;color:#fff;border:none;padding:0.75rem 1.75rem;border-radius:8px;font-size:1rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:background 0.2s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#1E3A8A'">Save Brochure</button>
+    <button onclick="window.close()" style="background:#fff;color:#1E3A8A;border:1.5px solid #1E3A8A;padding:0.75rem 1.75rem;border-radius:8px;font-size:1rem;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:background 0.2s;" onmouseover="this.style.background='#eef2ff'" onmouseout="this.style.background='#fff'">Close Brochure</button>
+  </div>
+
+  <script>
+    function saveBrochure() {
+      const html = '<!DOCTYPE html>\\n' + document.documentElement.outerHTML;
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = '${slug}_brochure.html';
+      document.body.appendChild(a);
+      a.click();
+      URL.revokeObjectURL(a.href);
+      document.body.removeChild(a);
+    }
+  <\/script>
+</body>
+</html>`;
+  }
+
+  // ── Read ?policy= from URL ───────────────────────────────────────────────────
+  const getSelectedPolicy = () => {
+    const sp = new URLSearchParams(window.location.search);
+    if (sp.has("policy")) return sp.get("policy");
+    const hash = window.location.hash || "";
+    const qi = hash.indexOf("?");
+    if (qi !== -1) {
+      const hp = new URLSearchParams(hash.substring(qi + 1));
+      if (hp.has("policy")) return hp.get("policy");
+    }
+    return null;
+  };
+
+  const selectedPolicy = getSelectedPolicy();
+  if (selectedPolicy && policyField) {
+    policyField.value = policyTitles[selectedPolicy] || "";
+  }
+
+  // ── Nav scroll-spy ───────────────────────────────────────────────────────────
   const setActiveLink = (id) => {
     navLinks.forEach((link) => {
-      const linkTarget = link.getAttribute("href").substring(1);
-      link.classList.toggle("active", linkTarget === id);
+      link.classList.toggle("active", link.getAttribute("href").substring(1) === id);
     });
   };
 
   const updateActiveLinkOnScroll = () => {
-    const scrollPosition = window.scrollY + 150;
+    const scrollY = window.scrollY + 150;
     sections.forEach((section) => {
-      const sectionTop = section.offsetTop;
-      const sectionHeight = section.offsetHeight;
-      const sectionId = section.getAttribute("id");
-      if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
-        setActiveLink(sectionId);
+      if (scrollY >= section.offsetTop && scrollY < section.offsetTop + section.offsetHeight) {
+        setActiveLink(section.getAttribute("id"));
       }
     });
   };
 
   navLinks.forEach((link) => {
-    link.addEventListener("click", (event) => {
-      event.preventDefault();
+    link.addEventListener("click", (e) => {
+      e.preventDefault();
       const targetId = link.getAttribute("href").substring(1);
-      const targetSection = document.getElementById(targetId);
-      if (targetSection) {
-        targetSection.scrollIntoView({ behavior: "smooth" });
-        setActiveLink(targetId);
-      }
+      document.getElementById(targetId)?.scrollIntoView({ behavior: "smooth" });
+      setActiveLink(targetId);
       if (mainNav.classList.contains("open")) {
         mainNav.classList.remove("open");
         navToggle.setAttribute("aria-expanded", "false");
@@ -117,227 +183,158 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  const openModal = (policyKey) => {
-    const policy = policyDetails[policyKey];
-    if (!policy) return;
-    activePolicyKey = policyKey;
-    modalTitle.textContent = policy.title;
-    modalDescription.textContent = policy.description;
-    modalBenefits.innerHTML = policy.benefits.map((item) => `<li>${item}</li>`).join("");
-    modalEligibility.textContent = policy.eligibility;
-    policyField.value = policy.title;
-    modalStatus.classList.add("hidden");
-    submissionSpinner.classList.add("hidden");
-    submissionMessage.textContent = "";
-    modal.classList.remove("hidden");
-    modal.setAttribute("aria-hidden", "false");
-  };
-
-  const closeModal = () => {
-    modal.classList.add("hidden");
-    modal.setAttribute("aria-hidden", "true");
-    modalStatus.classList.add("hidden");
-    submissionSpinner.classList.add("hidden");
-    submissionMessage.textContent = "";
-    activePolicyKey = null;
-  };
-
-  const setModalLoading = (isLoading) => {
-    submissionSpinner.classList.toggle("hidden", !isLoading);
-    modalDownload.disabled = isLoading;
-    modalInterested.disabled = isLoading;
-
-    if (isLoading) {
-      submissionMessage.textContent = "Submitting policy request...";
-      submissionMessage.classList.remove("error");
-      modalStatus.classList.remove("hidden");
-    }
-  };
-
-  const showModalFeedback = (message, isError = false) => {
-    submissionSpinner.classList.add("hidden");
-    modalStatus.classList.remove("hidden");
-    submissionMessage.textContent = message;
-    submissionMessage.classList.toggle("error", isError);
-    modalDownload.disabled = false;
-    modalInterested.disabled = false;
-  };
-
-  const clearFormFields = () => {
-    form.reset();
-    policyField.value = "";
-  };
-
-  const downloadPolicyPdf = async (policyName) => {
-    const response = await fetch("https://tata-aia-eta.vercel.app/api/policy-pdf/download", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name: policyName })
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Failed to download PDF: ${response.status} ${response.statusText} - ${errorText}`);
-    }
-
-    const { pdf_url, download_count } = await response.json();
-    if (!pdf_url) {
-      throw new Error("No PDF URL returned from the backend route.");
-    }
-
-    return { pdf_url, download_count };
-  };
-
-  const setFormLoading = (isLoading) => {
-    formSpinner.classList.toggle("hidden", !isLoading);
-    form.querySelector(".submit-button").disabled = isLoading;
-
-    if (isLoading) {
-      formMessage.textContent = "Submitting lead...";
-      formMessage.classList.remove("error");
-      formStatus.classList.remove("hidden");
-    }
-  };
-
-  const formatSupabaseError = (error) => {
-    const rawMessage = error?.message || String(error || "Unknown error");
-    if (rawMessage.includes("Could not find the 'full_name' column")) {
-      return "Lead submission failed: Supabase table schema mismatch. The 'policy_leads' table does not contain the expected 'full_name' column.";
-    }
-    if (rawMessage.includes("Could not find the 'email' column")) {
-      return "Lead submission failed: Supabase table schema mismatch. The 'policy_leads' table does not contain the expected 'email' column.";
-    }
-    if (rawMessage.includes("Could not find the 'phone' column")) {
-      return "Lead submission failed: Supabase table schema mismatch. The 'policy_leads' table does not contain the expected 'phone' column.";
-    }
-    if (rawMessage.includes("Could not find the 'policy_selected' column")) {
-      return "Lead submission failed: Supabase table schema mismatch. The 'policy_leads' table does not contain the expected 'policy_selected' column.";
-    }
-    if (rawMessage.includes("schema cache")) {
-      return "Lead submission failed: Supabase schema cache error. Please check your table columns and refresh the Supabase schema.";
-    }
-    return rawMessage;
-  };
-
-  const showFormFeedback = (message, isError = false) => {
-    formSpinner.classList.add("hidden");
-    formStatus.classList.remove("hidden");
-    formMessage.textContent = message;
-    formMessage.classList.toggle("error", isError);
-    form.querySelector(".submit-button").disabled = false;
-  };
-
-  const submitLead = async () => {
-    const payload = {
-      category_id: null,
-      category_name: policyField.value,
-      full_name: nameField.value.trim(),
-      email: emailField.value.trim(),
-      phone: phoneField.value.trim(),
-      policy_selected: policyField.value,
-      message: "Interested in this policy",
-      status: "new",
-      source_page: window.location.href,
-      created_at: new Date().toISOString()
-    };
-
-    const response = await fetch(`${SUPABASE_URL}/rest/v1/policy_leads`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
-        Prefer: "return=representation"
-      },
-      body: JSON.stringify(payload)
-    });
-
-    if (!response.ok) {
-      let errorMessage = `Lead submission failed: ${response.status} ${response.statusText}`;
-      try {
-        const errorData = await response.json();
-        if (errorData?.message) {
-          errorMessage = errorData.message;
-        }
-      } catch (_e) {
-        // ignore JSON parse errors
-      }
-      throw new Error(errorMessage);
-    }
-
-    return await response.json();
-  };
-
-  document.querySelectorAll(".view-details").forEach((button) => {
-    button.addEventListener("click", () => openModal(button.dataset.policy));
-  });
-
-  document.querySelectorAll(".download-brochure").forEach((button) => {
-    button.addEventListener("click", () => {
-      openModal(button.dataset.policy);
-    });
-  });
-
-  modalClose.addEventListener("click", closeModal);
-  modal.addEventListener("click", (event) => {
-    if (event.target === modal) {
-      closeModal();
-    }
-  });
-
-  modalDownload.addEventListener("click", async () => {
-    if (!activePolicyKey) {
-      showModalFeedback("Please open a policy before downloading the brochure.", true);
-      return;
-    }
-
-    try {
-      const policyTitle = policyDetails[activePolicyKey]?.title || "";
-      setModalLoading(true);
-      const { pdf_url, download_count } = await downloadPolicyPdf(policyTitle);
-      const downloadFilename = "policy-brochure.pdf"; // Assuming it's a PDF
-      const anchor = document.createElement("a");
-      anchor.href = pdf_url;
-      anchor.download = downloadFilename;
-      anchor.target = "_blank";
-      document.body.appendChild(anchor);
-      anchor.click();
-      anchor.remove();
-
-      showModalFeedback(`Brochure downloaded! (Total downloads: ${download_count})`);
-    } catch (error) {
-      console.error("PDF download error:", error);
-      showModalFeedback(`Download failed: ${error.message}`, true);
-    } finally {
-      setModalLoading(false);
-    }
-  });
-
-  modalInterested.addEventListener("click", () => {
-    closeModal();
-    document.getElementById("contact").scrollIntoView({ behavior: "smooth" });
-  });
-
-  form.addEventListener("submit", async (event) => {
-    event.preventDefault();
-    if (!form.reportValidity()) {
-      return;
-    }
-
-    try {
-      setFormLoading(true);
-      await submitLead();
-      showFormFeedback("Thank you! Your lead has been submitted successfully.");
-      form.reset();
-      policyField.value = "";
-    } catch (error) {
-      console.error("Supabase lead submission error:", error);
-      showFormFeedback(`Submission failed: ${formatSupabaseError(error)}`, true);
-    } finally {
-      setFormLoading(false);
-    }
-  });
-
   window.addEventListener("scroll", updateActiveLinkOnScroll);
   updateActiveLinkOnScroll();
+
+  // ── Book a Call ──────────────────────────────────────────────────────────────
+  document.querySelector(".secondary-button")?.addEventListener("click", () => {
+    document.getElementById("contact")?.scrollIntoView({ behavior: "smooth" });
+  });
+
+  // ── View Details → open individual policy page ───────────────────────────────
+  document.querySelectorAll(".view-details").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      window.open(`${btn.dataset.policy}.html`, "_blank");
+    });
+  });
+
+  // ── Download Brochure → generate HTML in-memory and save as .html ────────────
+  // Uses Blob — no fetch(), no server needed. Works from file:// and any host.
+  document.querySelectorAll(".download-brochure").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      const slug     = btn.dataset.policy;
+      const filename = `${slug}_brochure.html`;
+      const original = btn.textContent;
+
+      btn.textContent = "Downloading…";
+      btn.disabled    = true;
+
+      try {
+        const html = buildBrochureHTML(slug);
+        if (!html) throw new Error("Unknown policy: " + slug);
+
+        const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+        const url  = URL.createObjectURL(blob);
+
+        const win = window.open(url, "_blank", "noopener,noreferrer");
+        // Revoke after a short delay to give the new tab time to load
+        setTimeout(() => URL.revokeObjectURL(url), 30000);
+
+        // Increment download_count in Supabase (fire-and-forget)
+        sb.from("policy_categories")
+          .select("id, download_count")
+          .eq("category", slug)
+          .single()
+          .then(({ data, error }) => {
+            if (!error && data) {
+              sb.from("policy_categories")
+                .update({ download_count: (data.download_count || 0) + 1 })
+                .eq("id", data.id);
+            }
+          });
+
+      } catch (err) {
+        console.error("Download error:", err);
+        alert("Could not generate brochure. Please try again.");
+      } finally {
+        btn.textContent = original;
+        btn.disabled    = false;
+      }
+    });
+  });
+
+  // ── Policy card click → auto-fill contact form policy field ─────────────────
+  document.querySelectorAll(".policy-card").forEach((card) => {
+    card.addEventListener("click", (e) => {
+      if (e.target.tagName === "BUTTON") return;
+      const slug = card.dataset.policy;
+      if (slug && policyField) {
+        policyField.value = policyTitles[slug] || "";
+      }
+    });
+  });
+
+  // ── Contact form → insert lead into policy_leads ─────────────────────────────
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!form.reportValidity()) return;
+
+    const submitBtn = form.querySelector(".submit-button");
+    submitBtn.textContent = "Submitting…";
+    submitBtn.disabled    = true;
+
+    const nameVal   = document.getElementById("name").value.trim();
+    const emailVal  = document.getElementById("email").value.trim();
+    const phoneVal  = document.getElementById("phone").value.trim();
+    const policyVal = policyField.value.trim();
+
+    const slugByTitle = Object.fromEntries(
+      Object.entries(policyTitles).map(([k, v]) => [v, k])
+    );
+    const policySlug = slugByTitle[policyVal] || selectedPolicy || null;
+
+    let categoryId = null;
+    if (policySlug) {
+      try {
+        const { data: catRow, error: catErr } = await sb
+          .from("policy_categories")
+          .select("id, insert_count")
+          .eq("category", policySlug)
+          .single();
+
+        if (!catErr && catRow) {
+          categoryId = catRow.id;
+          sb.from("policy_categories")
+            .update({ insert_count: (catRow.insert_count || 0) + 1 })
+            .eq("id", catRow.id);
+        }
+      } catch (lookupErr) {
+        console.warn("Category lookup exception:", lookupErr);
+      }
+    }
+
+    // Column names must match Supabase exactly (PostgreSQL lowercases all unquoted identifiers)
+    const leadPayload = {
+      name:              nameVal,
+      email:             emailVal,
+      phone:             phoneVal,
+      policy_selected:   policyVal,
+      message:           null,
+      status:            "new",
+      source_page:       "index.html",
+      submitted_at:      new Date().toISOString()
+    };
+
+    if (categoryId) leadPayload.category_id  = categoryId;
+    if (policyVal)  leadPayload.category_name = policyVal;
+
+    console.log("Inserting lead payload:", leadPayload);
+
+    const { data: insertData, error: insertErr } = await sb
+      .from("policy_leads")
+      .insert([leadPayload])
+      .select();
+
+    submitBtn.textContent = "Submit";
+    submitBtn.disabled    = false;
+
+    if (insertErr) {
+      console.error("Lead insert error:", insertErr);
+      const errDetail = insertErr.message || insertErr.details || insertErr.hint || JSON.stringify(insertErr);
+      showMessage(successMessage, `Error: ${errDetail}`, "#b91c1c");
+    } else {
+      console.log("Lead inserted:", insertData);
+      showMessage(successMessage, "Thank you! Your request has been submitted successfully.", "#047857");
+      form.reset();
+      policyField.value = "";
+    }
+  });
+
+  // ── Helpers ──────────────────────────────────────────────────────────────────
+  function showMessage(el, text, color) {
+    el.textContent = text;
+    el.style.color = color || "";
+    el.classList.remove("hidden");
+    setTimeout(() => el.classList.add("hidden"), 15000);
+  }
 });

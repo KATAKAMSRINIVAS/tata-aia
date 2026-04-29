@@ -22,14 +22,9 @@
       font-family: 'Inter', sans-serif;
       background: var(--bg-color);
       color: var(--text-color);
-      line-height: 1.75;
-    }
-
-    h1, h2 {
-      font-family: 'Playfair Display', serif;
-      color: var(--primary-color);
-      margin-top: 0;
-    }
+      line-height: 2;
+  overflow-x: hidden;
+  word-wrap: break-word;
 
     h1 {
       font-size: 3rem;
@@ -37,7 +32,7 @@
     }
 
     h2 {
-      font-size: 1.75rem;
+      font-size: 2rem;
       margin-bottom: 0.75rem;
     }
 
@@ -71,6 +66,29 @@
       display: block;
       color: var(--primary-color);
       margin-bottom: 0.5rem;
+    }
+
+    .close-button-container {
+      display: inline-flex;
+      justify-content: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+      margin-top: 2rem;
+    }
+
+    .action-button {
+      background: var(--primary-color);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .action-button:hover {
+      background: #1d4ed8;
     }
   </style>
 </head>
@@ -123,5 +141,92 @@
     <p>Email: katakam_srinivas@hotmail.com</p>
     <p>Phone: +91 9989631000</p>
   </div>
+
+  <div class="close-button-container">
+    <button id="save-button" class="action-button">Save Brochure</button>
+    <button id="close-button" class="action-button close-button">Close Brochure</button>
+  </div>
 </body>
+<script>
+  const policyDetails = {
+    term: {
+      title: "Term Plans",
+      description: "High-value protection at affordable premiums. Covers life insurance needs for dependents.",
+      benefits: [
+        "Large life cover",
+        "Flexible terms",
+        "Financial security"
+      ]
+    },
+    savings: {
+      title: "Savings Plans",
+      description: "Balanced plans that help you save while providing life protection. Ideal for long-term goals.",
+      benefits: [
+        "Regular returns",
+        "Loyalty bonuses",
+        "Disciplined savings"
+      ]
+    },
+    children: {
+      title: "Children Plans",
+      description: "Secure your child's education and future with dedicated coverage.",
+      benefits: [
+        "Education funding",
+        "Guaranteed growth",
+        "Guardian protection"
+      ]
+    },
+    retirement: {
+      title: "Retirement Plans",
+      description: "Plan for a comfortable retirement with steady income and financial independence.",
+      benefits: [
+        "Tax-efficient savings",
+        "Retirement income",
+        "Financial independence"
+      ]
+    }
+  };
+
+  const urlParams = new URLSearchParams(window.location.search);
+  const selectedPolicy = urlParams.get('policy');
+
+  if (selectedPolicy && policyDetails[selectedPolicy]) {
+    const policy = policyDetails[selectedPolicy];
+    document.querySelector('h1').textContent = policy.title;
+    document.querySelector('p').textContent = policy.description;
+
+    const sections = document.querySelectorAll('.section');
+    sections.forEach(section => section.style.display = 'none');
+
+    // Create a new section for the selected policy
+    const brochureContainer = document.querySelector('body');
+    const newSection = document.createElement('div');
+    newSection.className = 'section';
+    newSection.innerHTML = `
+      <h2>${policy.title}</h2>
+      <p>${policy.description}</p>
+      <ul>
+        ${policy.benefits.map(benefit => `<li>${benefit}</li>`).join('')}
+      </ul>
+    `;
+    brochureContainer.insertBefore(newSection, document.querySelector('.contact-note'));
+  }
+
+  document.getElementById('save-button').addEventListener('click', () => {
+    const html = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    const blob = new Blob([html], { type: 'text/html' });
+    const a = document.createElement('a');
+    const title = selectedPolicy && policyDetails[selectedPolicy] ? policyDetails[selectedPolicy].title.replace(/\s+/g, '_').toLowerCase() : 'brochure';
+    a.href = URL.createObjectURL(blob);
+    a.download = `${title}.html`;
+    document.body.appendChild(a);
+    a.click();
+    URL.revokeObjectURL(a.href);
+    document.body.removeChild(a);
+  });
+
+  document.getElementById('close-button').addEventListener('click', () => {
+    window.close();
+  });
+</script>
 </html>

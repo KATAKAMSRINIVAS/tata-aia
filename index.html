@@ -6,7 +6,8 @@
   <meta name="description" content="K. Srinivasa Rao - Insurance Advisor at TATA-AIA" />
   <title>TATA-AIA Advisor | K. Srinivasa Rao</title>
   <link rel="stylesheet" href="styles.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
 </head>
 <body>
   <header class="site-header">
@@ -87,8 +88,7 @@
         <div class="policies-grid">
           <article class="policy-card" data-policy="term">
             <h3>Term Plans</h3>
-            <h4>Description</h4>
-            <p>Pure life cover designed to protect your family’s financial future.</p>
+            <p>Term insurance offers high-value protection for your family during the years they need it most.</p>
             <div class="card-actions">
               <button class="policy-button view-details" data-policy="term">View Details</button>
               <button class="policy-button download-brochure" data-policy="term">Download Brochure</button>
@@ -97,8 +97,7 @@
 
           <article class="policy-card" data-policy="savings">
             <h3>Savings Plans</h3>
-            <h4>Description</h4>
-            <p>Balanced plans that help you save while providing life protection.</p>
+            <p>Build a disciplined savings habit while maintaining protection through a plan designed for long-term goals.</p>
             <div class="card-actions">
               <button class="policy-button view-details" data-policy="savings">View Details</button>
               <button class="policy-button download-brochure" data-policy="savings">Download Brochure</button>
@@ -107,8 +106,7 @@
 
           <article class="policy-card" data-policy="children">
             <h3>Children Plans</h3>
-            <h4>Description</h4>
-            <p>Secure your child’s education and future with dedicated coverage.</p>
+            <p>Protect your child’s future with a plan that supports education, milestones, and long-term security.</p>
             <div class="card-actions">
               <button class="policy-button view-details" data-policy="children">View Details</button>
               <button class="policy-button download-brochure" data-policy="children">Download Brochure</button>
@@ -117,8 +115,7 @@
 
           <article class="policy-card" data-policy="retirement">
             <h3>Retirement Plans</h3>
-            <h4>Description</h4>
-            <p>Plan today for a confident and comfortable retirement tomorrow.</p>
+            <p>Plan for a comfortable retirement with a strategy that creates future income and preserves your lifestyle.</p>
             <div class="card-actions">
               <button class="policy-button view-details" data-policy="retirement">View Details</button>
               <button class="policy-button download-brochure" data-policy="retirement">Download Brochure</button>
@@ -160,10 +157,6 @@
 
           <button type="submit" class="cta-button submit-button">Submit</button>
           <p class="success-message hidden">Thank you! Your request has been submitted successfully.</p>
-          <div id="form-status" class="form-status hidden">
-            <div id="form-spinner" class="spinner hidden" aria-hidden="true"></div>
-            <p id="form-message" class="form-message"></p>
-          </div>
         </form>
       </div>
     </section>
@@ -175,33 +168,6 @@
     </div>
   </footer>
 
-  <div id="policy-modal" class="modal hidden" aria-hidden="true">
-    <div class="modal-content">
-      <button type="button" class="modal-close" aria-label="Close modal">×</button>
-      <span class="modal-tag">Policy Details</span>
-      <h3 class="modal-title"></h3>
-      <p class="modal-description"></p>
-      <div>
-        <h4>Benefits</h4>
-        <ul class="modal-benefits"></ul>
-      </div>
-      <div>
-        <h4>Eligibility</h4>
-        <p class="modal-eligibility"></p>
-      </div>
-      <div class="modal-actions">
-        <button id="modal-download" type="button" class="policy-button">Download PDF</button>
-        <button id="modal-interested" type="button" class="cta-button">I'm Interested</button>
-      </div>
-      <div id="modal-status" class="modal-status hidden">
-        <div id="submission-spinner" class="spinner hidden" aria-hidden="true"></div>
-        <p id="submission-message" class="submission-message"></p>
-      </div>
-    </div>
-  </div>
-
-  <script src="supabase-config.js"></script>
-  <script src="config.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

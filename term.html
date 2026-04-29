@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Term Plans - TATA-AIA Insurance</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="supabase-config.js"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
+    :root { --primary-color:#1E3A8A; --bg-color:#f8fafc; --text-color:#0f172a; --muted-color:#475569; --card-bg:#ffffff; --border-radius:20px; }
+    * { box-sizing:border-box; }
+    body { margin:0; padding:2rem; font-family:'Inter',sans-serif; background:var(--bg-color); color:var(--text-color); line-height:2; overflow-x:hidden; word-wrap:break-word; }
+    h1 { font-family:'Playfair Display',serif; font-size:3rem; margin-bottom:0.5rem; color:var(--primary-color); }
+    h2 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.75rem; color:var(--primary-color); }
+    p, li { font-size:1rem; color:var(--muted-color); margin:0.75rem 0; }
+    ul { padding-left:1.25rem; margin:0.5rem 0 1.25rem; }
+    .section { background:var(--card-bg); border-radius:var(--border-radius); padding:1.75rem; box-shadow:0 18px 40px rgba(15,23,42,0.08); margin-bottom:1.5rem; }
+    .contact-note { margin-top:1.5rem; padding:1.5rem; background:rgba(30,58,138,0.08); border-radius:var(--border-radius); }
+    .contact-note strong { display:block; color:var(--primary-color); margin-bottom:0.5rem; }
+    .button-container { display:inline-flex; justify-content:center; gap:1rem; flex-wrap:wrap; margin-top:2rem; }
+    .action-button { background:var(--primary-color); color:white; border:none; padding:0.75rem 1.5rem; border-radius:8px; font-size:1rem; cursor:pointer; transition:background 0.2s ease, opacity 0.2s; }
+    .action-button:hover { background:#1d4ed8; }
+    .action-button:disabled { opacity:0.6; cursor:not-allowed; }
+    .notice { font-weight:600; margin:1rem 0; padding:0.75rem 1rem; border-radius:8px; display:none; }
+    .notice.error   { color:#b91c1c; background:#fef2f2; }
+    .notice.success { color:#047857; background:#f0fdf4; }
+    .notice.warn    { color:#92400e; background:#fffbeb; }
+    #debug-box { background:#1e293b; color:#94a3b8; font-family:monospace; font-size:0.78rem; padding:1rem; border-radius:12px; margin-top:1rem; white-space:pre-wrap; word-break:break-all; display:none; }
+  </style>
+</head>
+<body>
+  <h1>Term Plans</h1>
+
+  <div class="section">
+    <h2>Description</h2>
+    <p id="policy-desc">Loading…</p>
+  </div>
+
+  <div class="section">
+    <h2>Benefits</h2>
+    <ul id="policy-benefits"><li>Loading…</li></ul>
+  </div>
+
+  <div class="section">
+    <h2>Eligibility</h2>
+    <p id="policy-eligibility">Loading…</p>
+  </div>
+
+  <div class="contact-note">
+    <strong>Contact K. Srinivasa Rao</strong>
+    <p>Email: katakam_srinivas@hotmail.com</p>
+    <p>Phone: +91 9989631000</p>
+  </div>
+
+  <p id="notice-msg" class="notice"></p>
+  <div id="debug-box"></div>
+
+  <div class="button-container">
+    <button id="close-btn"      class="action-button">Close</button>
+    <button id="download-btn"   class="action-button">Download PDF</button>
+    <button id="interested-btn" class="action-button">I'm Interested</button>
+  </div>
+
+  <script>
+  const SLUG = "term";
+
+  function setNotice(msg, type) {
+    const el = document.getElementById("notice-msg");
+    el.textContent = msg;
+    el.className   = "notice " + (type || "warn");
+    el.style.display = msg ? "block" : "none";
+  }
+
+  function showDebug(obj) {
+    const box = document.getElementById("debug-box");
+    box.textContent = JSON.stringify(obj, null, 2);
+    box.style.display = "block";
+  }
+
+  function getSB() {
+    return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+
+  // Static fallback content — shown immediately
+  const staticData = {
+    term:       { desc:"Term insurance offers high-value protection for your family during the years they need it most.", benefits:["Large life cover at an affordable premium","Financial protection for dependents","Flexible policy term and sum assured options"], elig:"Available for individuals aged 18 to 65." },
+    savings:    { desc:"Build a disciplined savings habit while maintaining protection through a plan designed for long-term goals.", benefits:["Regular returns with insurance cover","Loyalty bonuses and maturity benefits","Disciplined savings towards future goals"], elig:"Suitable for individuals aged 25 to 55." },
+    children:   { desc:"Protect your child's future with a plan that supports education, milestones, and long-term security.", benefits:["Funding for education and milestones","Guaranteed growth with maturity benefits","Security even if a guardian is no longer around"], elig:"Designed for parents and guardians." },
+    retirement: { desc:"Plan for a comfortable retirement with a strategy that creates future income and preserves your lifestyle.", benefits:["Steady retirement income","Tax-efficient savings","Financial independence in later years"], elig:"Ideal for individuals aged 30 to 55." }
+  };
+
+  const sd = staticData[SLUG];
+  document.getElementById("policy-desc").textContent        = sd.desc;
+  document.getElementById("policy-benefits").innerHTML      = sd.benefits.map(b => "<li>" + b + "</li>").join("");
+  document.getElementById("policy-eligibility").textContent = sd.elig;
+
+  // Wire buttons immediately
+  document.getElementById("close-btn").addEventListener("click", () => window.close());
+  document.getElementById("interested-btn").addEventListener("click", () => {
+    window.open("index.html?policy=" + SLUG + "#contact", "_blank");
+  });
+
+  document.getElementById("download-btn").addEventListener("click", async () => {
+    const btn = document.getElementById("download-btn");
+    btn.textContent = "Fetching…";
+    btn.disabled    = true;
+    setNotice("", "");
+
+    try {
+      const sb = getSB();
+
+      // ── STEP 1: Dump ALL rows from policy_categories to debug ──────────────
+      const { data: allRows, error: allErr } = await sb
+        .from("policy_categories")
+        .select("id, category, pdf_url, is_active");
+
+      if (allErr) {
+        setNotice("Supabase connection error: " + allErr.message, "error");
+        showDebug({ error: allErr });
+        return;
+      }
+
+      // Show all rows so we can see exact category values in the table
+      showDebug({
+        looking_for_category: SLUG,
+        all_rows_in_table: allRows,
+        row_count: allRows ? allRows.length : 0
+      });
+
+      if (!allRows || allRows.length === 0) {
+        setNotice("policy_categories table is EMPTY. Please insert rows via SQL Editor.", "error");
+        return;
+      }
+
+      // ── STEP 2: Find the matching row manually (case-insensitive) ──────────
+      const matchedRow = allRows.find(r =>
+        r.category && r.category.trim().toLowerCase() === SLUG.toLowerCase()
+      );
+
+      if (!matchedRow) {
+        const found = allRows.map(r => '"' + r.category + '"').join(", ");
+        setNotice('No row matched category="' + SLUG + '". Found: ' + found, "warn");
+        return;
+      }
+
+      if (!matchedRow.pdf_url) {
+        setNotice("Row found (id=" + matchedRow.id + ") but pdf_url is empty. Upload a PDF and set the url in Supabase.", "warn");
+        return;
+      }
+
+      // Increment download_count
+      sb.from("policy_categories")
+        .update({ download_count: (matchedRow.download_count || 0) + 1 })
+        .eq("id", matchedRow.id)
+        .then(() => {});
+
+      window.open(matchedRow.pdf_url, "_blank", "noopener,noreferrer");
+      setNotice("PDF opened in a new tab!", "success");
+
+    } catch (e) {
+      setNotice("Unexpected error: " + e.message, "error");
+      showDebug({ exception: e.message });
+    } finally {
+      btn.textContent = "Download PDF";
+      btn.disabled    = false;
+    }
+  });
+
+  // Load live data (optional enhancement)
+  (async () => {
+    try {
+      const sb = getSB();
+      const { data, error } = await sb
+        .from("policy_categories")
+        .select("description, benefits, eligibility")
+        .eq("category", SLUG)
+        .maybeSingle();
+      if (error || !data) return;
+      if (data.description) document.getElementById("policy-desc").textContent = data.description;
+      let bens = data.benefits;
+      if (typeof bens === "string") { try { bens = JSON.parse(bens); } catch { bens = bens.split("\n").filter(Boolean); } }
+      if (Array.isArray(bens) && bens.length)
+        document.getElementById("policy-benefits").innerHTML = bens.map(b => "<li>" + b + "</li>").join("");
+      if (data.eligibility) document.getElementById("policy-eligibility").textContent = data.eligibility;
+    } catch(e) { /* silent — static content already showing */ }
+  })();
+  </script>
+</body>
+</html>

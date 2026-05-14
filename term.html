@@ -3,48 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Term Plans - TATA-AIA Insurance</title>
+  <title>Term Plans | TATA-AIA Advisor</title>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="supabase-config.js"></script>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@700&display=swap');
-    :root { --primary-color:#1E3A8A; --bg-color:#f8fafc; --text-color:#0f172a; --muted-color:#475569; --card-bg:#ffffff; --border-radius:20px; }
-    * { box-sizing:border-box; }
-    body { margin:0; padding:2rem; font-family:'Inter',sans-serif; background:var(--bg-color); color:var(--text-color); line-height:2; overflow-x:hidden; word-wrap:break-word; }
-    h1 { font-family:'Playfair Display',serif; font-size:3rem; margin-bottom:0.5rem; color:var(--primary-color); }
-    h2 { font-family:'Playfair Display',serif; font-size:2rem; margin-bottom:0.75rem; color:var(--primary-color); }
-    p, li { font-size:1rem; color:var(--muted-color); margin:0.75rem 0; }
-    ul { padding-left:1.25rem; margin:0.5rem 0 1.25rem; }
-    .section { background:var(--card-bg); border-radius:var(--border-radius); padding:1.75rem; box-shadow:0 18px 40px rgba(15,23,42,0.08); margin-bottom:1.5rem; }
-    .contact-note { margin-top:1.5rem; padding:1.5rem; background:rgba(30,58,138,0.08); border-radius:var(--border-radius); }
-    .contact-note strong { display:block; color:var(--primary-color); margin-bottom:0.5rem; }
-    .button-container { display:inline-flex; justify-content:center; gap:1rem; flex-wrap:wrap; margin-top:2rem; }
-    .action-button { background:var(--primary-color); color:white; border:none; padding:0.75rem 1.5rem; border-radius:8px; font-size:1rem; cursor:pointer; transition:background 0.2s ease, opacity 0.2s; }
-    .action-button:hover { background:#1d4ed8; }
-    .action-button:disabled { opacity:0.6; cursor:not-allowed; }
-    .notice { font-weight:600; margin:1rem 0; padding:0.75rem 1rem; border-radius:8px; display:none; }
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap');
+    :root {
+      --primary: #1E3A8A;
+      --primary-hover: #1d4ed8;
+      --primary-light: rgba(30,58,138,0.08);
+      --bg: #f8fafc;
+      --surface: #ffffff;
+      --text: #0f172a;
+      --muted: #475569;
+      --subtle: #94a3b8;
+      --border: rgba(30,58,138,0.12);
+      --radius-sm: 10px;
+      --radius-md: 16px;
+      --radius-lg: 24px;
+      --radius-pill: 999px;
+      --shadow-sm: 0 4px 16px rgba(15,23,42,0.06);
+      --shadow-md: 0 12px 32px rgba(15,23,42,0.08);
+      --ease-out: cubic-bezier(0.22,1,0.36,1);
+    }
+    *, *::before, *::after { box-sizing: border-box; }
+    body { margin:0; padding:3rem 2rem; font-family:'Inter',system-ui,sans-serif; font-size:1rem; line-height:1.8; background:var(--bg); color:var(--text); overflow-x:hidden; word-wrap:break-word; -webkit-font-smoothing:antialiased; }
+    h1 { font-family:'Playfair Display',Georgia,serif; font-size:clamp(2rem,5vw,3rem); line-height:1.15; letter-spacing:-0.02em; color:var(--primary); margin:0 0 0.5rem; }
+    h2 { font-family:'Playfair Display',Georgia,serif; font-size:clamp(1.35rem,3.5vw,2rem); line-height:1.3; letter-spacing:-0.015em; color:var(--primary); margin:0 0 0.6rem; }
+    p, li { font-size:1rem; color:var(--muted); line-height:1.8; margin:0.5rem 0; }
+    ul { padding-left:1.25rem; margin:0.5rem 0 1rem; }
+    .section { background:var(--surface); border-radius:var(--radius-lg); padding:2rem 2.25rem; box-shadow:var(--shadow-md); margin-bottom:1.5rem; }
+    .contact-note { margin-top:1.5rem; padding:1.5rem 2rem; background:var(--primary-light); border-radius:var(--radius-lg); }
+    .contact-note strong { display:block; font-size:0.75rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--primary); margin-bottom:0.6rem; }
+    .button-container { display:flex; flex-wrap:wrap; gap:0.85rem; margin-top:2.5rem; }
+    .action-button {
+      display:inline-flex; align-items:center; justify-content:center;
+      font-family:'Inter',sans-serif; font-size:1rem; font-weight:600; letter-spacing:0.01em;
+      background:var(--primary); color:#fff;
+      border:2px solid var(--primary);
+      padding:0.85rem 1.85rem; min-height:50px;
+      border-radius:var(--radius-pill);
+      cursor:pointer;
+      transition:background 0.22s var(--ease-out),transform 0.22s var(--ease-out),box-shadow 0.22s var(--ease-out);
+    }
+    .action-button:hover { background:var(--primary-hover); border-color:var(--primary-hover); transform:translateY(-2px); box-shadow:0 10px 28px rgba(30,58,138,0.28); }
+    .action-button:active { transform:translateY(0); box-shadow:none; }
+    .action-button:disabled { opacity:0.55; cursor:not-allowed; transform:none; box-shadow:none; }
+    .notice { font-size:0.9rem; font-weight:600; margin:1rem 0; padding:0.75rem 1.1rem; border-radius:var(--radius-sm); display:none; }
     .notice.error   { color:#b91c1c; background:#fef2f2; }
     .notice.success { color:#047857; background:#f0fdf4; }
     .notice.warn    { color:#92400e; background:#fffbeb; }
-    #debug-box { background:#1e293b; color:#94a3b8; font-family:monospace; font-size:0.78rem; padding:1rem; border-radius:12px; margin-top:1rem; white-space:pre-wrap; word-break:break-all; display:none; }
+    #debug-box { background:#1e293b; color:#94a3b8; font-family:monospace; font-size:0.78rem; padding:1rem 1.25rem; border-radius:var(--radius-md); margin-top:1rem; white-space:pre-wrap; word-break:break-all; display:none; }
   </style>
 </head>
 <body>
   <h1>Term Plans</h1>
 
   <div class="section">
-    <h2>Description</h2>
-    <p id="policy-desc">Loading…</p>
+    <h2>About This Plan</h2>
+    <p id="policy-about">Loading…</p>
   </div>
 
   <div class="section">
-    <h2>Benefits</h2>
+    <h2>Key Benefits</h2>
     <ul id="policy-benefits"><li>Loading…</li></ul>
   </div>
 
   <div class="section">
-    <h2>Eligibility</h2>
+    <h2>Eligibility Details</h2>
     <p id="policy-eligibility">Loading…</p>
+  </div>
+
+  <div class="section">
+    <h2 id="sample-plan-title">Sample Plan Details</h2>
+    <p style="font-style:italic;color:#475569;margin-bottom:1rem;">Understand key aspects of this plan to make an informed decision.</p>
+    <div id="eligibility-notes-container" style="display:block;margin-top:1rem;padding:0.75rem;background:rgba(30,58,138,0.04);border-left:3px solid #1E3A8A;border-radius:6px;">
+      <h3 style="margin-top:0;font-size:0.95rem;color:#1E3A8A;">Notes:</h3>
+      <p id="policy-notes" style="margin-bottom:0;font-size:0.95rem;"></p>
+    </div>
+    
+    <div style="margin:1rem 0;padding:1rem;background:rgba(30,58,138,0.04);border-left:4px solid #1E3A8A;border-radius:8px;">
+      <h3 style="margin-top:0;color:#1E3A8A;">What is the Premium?</h3>
+      <p id="policy-premium">Loading…</p>
+    </div>
+
+    <div style="margin:1rem 0;padding:1rem;background:rgba(30,58,138,0.04);border-left:4px solid #1E3A8A;border-radius:8px;">
+      <h3 style="margin-top:0;color:#1E3A8A;">Plan Term</h3>
+      <p id="policy-term">Loading…</p>
+    </div>
+
+    <div style="margin:1rem 0;padding:1rem;background:rgba(30,58,138,0.04);border-left:4px solid #1E3A8A;border-radius:8px;">
+      <h3 style="margin-top:0;color:#1E3A8A;">Maturity Details</h3>
+      <p id="policy-maturity">Loading…</p>
+    </div>
   </div>
 
   <div class="contact-note">
@@ -84,21 +135,53 @@
 
   // Static fallback content — shown immediately
   const staticData = {
-    term:       { desc:"Term insurance offers high-value protection for your family during the years they need it most.", benefits:["Large life cover at an affordable premium","Financial protection for dependents","Flexible policy term and sum assured options"], elig:"Available for individuals aged 18 to 65." },
-    savings:    { desc:"Build a disciplined savings habit while maintaining protection through a plan designed for long-term goals.", benefits:["Regular returns with insurance cover","Loyalty bonuses and maturity benefits","Disciplined savings towards future goals"], elig:"Suitable for individuals aged 25 to 55." },
-    children:   { desc:"Protect your child's future with a plan that supports education, milestones, and long-term security.", benefits:["Funding for education and milestones","Guaranteed growth with maturity benefits","Security even if a guardian is no longer around"], elig:"Designed for parents and guardians." },
-    retirement: { desc:"Plan for a comfortable retirement with a strategy that creates future income and preserves your lifestyle.", benefits:["Steady retirement income","Tax-efficient savings","Financial independence in later years"], elig:"Ideal for individuals aged 30 to 55." }
+    term: {
+      about: "Term insurance offers high-value protection for your family during the years they need it most.",
+      benefits: ["Large life cover at an affordable premium", "Financial protection for dependents", "Flexible policy term and sum assured options"],
+      eligibility: "Available for individuals aged 18 to 65. Ideal for salaried professionals and family providers.",
+      premium: "Premiums depend on age, sum assured, term, and product variant. Your advisor will walk through indicative options and tax implications before you decide.",
+      term_details: "Typical terms range from short protection windows to longer coverage periods; the right term matches your income years and family obligations.",
+      maturity: "Pure term plans usually do not pay a maturity benefit—the focus is life protection for your nominees. Confirm product-specific wording with your advisor."
+    },
+    savings: {
+      about: "Build a disciplined savings habit while maintaining protection through a plan designed for long-term goals.",
+      benefits: ["Regular returns with insurance cover", "Loyalty bonuses and maturity benefits", "Helps meet future goals with disciplined savings"],
+      eligibility: "Suitable for individuals aged 25 to 55 looking for life cover plus savings.",
+      premium: "Premium payment modes and amounts vary by age, premium payment term, and fund or bonus structure. Your advisor will explain options suited to your cash flow.",
+      term_details: "Policy terms often combine a premium payment period with a longer coverage or accumulation phase; align the term with when you need money back or continued protection.",
+      maturity: "Savings-oriented plans may pay maturity or survival benefits as defined in the product; bonuses or returns are illustrative until confirmed in the official illustration."
+    },
+    children: {
+      about: "Protect your child's future with a plan that supports education, milestones, and long-term security.",
+      benefits: ["Funding for education and milestones", "Guaranteed growth with maturity benefits", "Security even in the event of a guardian's loss"],
+      eligibility: "Designed for parents and guardians. Covers children from birth through early adulthood.",
+      premium: "Premiums are set based on the life assured's age, sum assured, and how long you pay—your advisor will share indicative figures for education or milestone goals.",
+      term_details: "Choose a term that covers school and higher education years; some designs link payouts to key ages so funds arrive when milestones occur.",
+      maturity: "Benefits may include guaranteed or accrued amounts around maturity for the child's future needs; exact structure depends on the selected child plan—review the illustration carefully."
+    },
+    retirement: {
+      about: "Plan for a comfortable retirement with a strategy that creates future income and preserves your lifestyle.",
+      benefits: ["Steady retirement income", "Tax-efficient savings", "Financial independence in later years"],
+      eligibility: "Ideal for individuals aged 30 to 55 who want to secure their retirement lifestyle.",
+      premium: "Contribution amounts depend on entry age, deferment or payout preferences, and whether income starts immediately or later. Your advisor will align premium with your retirement timeline.",
+      term_details: "Deferment period and annuity or withdrawal phase define how long you accumulate versus how long income lasts—pick terms that match your retirement age and lifestyle.",
+      maturity: "Payouts may be annuity income, lump sum, or a combination per product rules; tax treatment can vary—confirm maturity and income details with your advisor."
+    }
   };
 
   const sd = staticData[SLUG];
-  document.getElementById("policy-desc").textContent        = sd.desc;
+  document.getElementById("policy-about").textContent       = sd.about;
   document.getElementById("policy-benefits").innerHTML      = sd.benefits.map(b => "<li>" + b + "</li>").join("");
-  document.getElementById("policy-eligibility").textContent = sd.elig;
+  document.getElementById("policy-eligibility").textContent = sd.eligibility;
+  document.getElementById("policy-notes").textContent       = sd.notes || "No additional notes available.";
+  document.getElementById("policy-premium").textContent     = sd.premium;
+  document.getElementById("policy-term").textContent        = sd.term_details;
+  document.getElementById("policy-maturity").textContent    = sd.maturity;
 
   // Wire buttons immediately
   document.getElementById("close-btn").addEventListener("click", () => window.close());
   document.getElementById("interested-btn").addEventListener("click", () => {
-    window.open("index.html?policy=" + SLUG + "#contact", "_blank");
+    window.open("index.html?policy=" + SLUG + "#contact", "_blank", "noopener,noreferrer");
   });
 
   document.getElementById("download-btn").addEventListener("click", async () => {
@@ -110,30 +193,22 @@
     try {
       const sb = getSB();
 
-      // ── STEP 1: Dump ALL rows from policy_categories to debug ──────────────
+      // ── Fetch policy data from Supabase ──────────────────────────────────
       const { data: allRows, error: allErr } = await sb
         .from("policy_categories")
-        .select("id, category, pdf_url, is_active");
+        .select("id, category, pdf_url, is_active, download_count");
 
       if (allErr) {
         setNotice("Supabase connection error: " + allErr.message, "error");
-        showDebug({ error: allErr });
         return;
       }
-
-      // Show all rows so we can see exact category values in the table
-      showDebug({
-        looking_for_category: SLUG,
-        all_rows_in_table: allRows,
-        row_count: allRows ? allRows.length : 0
-      });
 
       if (!allRows || allRows.length === 0) {
         setNotice("policy_categories table is EMPTY. Please insert rows via SQL Editor.", "error");
         return;
       }
 
-      // ── STEP 2: Find the matching row manually (case-insensitive) ──────────
+      // ── Find the matching row manually (case-insensitive) ──────────────
       const matchedRow = allRows.find(r =>
         r.category && r.category.trim().toLowerCase() === SLUG.toLowerCase()
       );
@@ -167,22 +242,34 @@
     }
   });
 
-  // Load live data (optional enhancement)
+  // Load live data from Supabase
   (async () => {
     try {
       const sb = getSB();
       const { data, error } = await sb
         .from("policy_categories")
-        .select("description, benefits, eligibility")
+        .select("about_plan, key_benefits, eligibility_details, eligibility_notes, sample_plan_section_title, premium_details, plan_term_details, maturity_details")
         .eq("category", SLUG)
         .maybeSingle();
       if (error || !data) return;
-      if (data.description) document.getElementById("policy-desc").textContent = data.description;
-      let bens = data.benefits;
-      if (typeof bens === "string") { try { bens = JSON.parse(bens); } catch { bens = bens.split("\n").filter(Boolean); } }
-      if (Array.isArray(bens) && bens.length)
-        document.getElementById("policy-benefits").innerHTML = bens.map(b => "<li>" + b + "</li>").join("");
-      if (data.eligibility) document.getElementById("policy-eligibility").textContent = data.eligibility;
+      
+      if (data.about_plan) document.getElementById("policy-about").textContent = data.about_plan;
+      
+      if (data.key_benefits) {
+        let bens = data.key_benefits;
+        if (typeof bens === "string") { try { bens = JSON.parse(bens); } catch { bens = bens.split("\n").filter(Boolean); } }
+        if (Array.isArray(bens) && bens.length)
+          document.getElementById("policy-benefits").innerHTML = bens.map(b => "<li>" + b + "</li>").join("");
+      }
+      
+      if (data.eligibility_details) document.getElementById("policy-eligibility").textContent = data.eligibility_details;
+      
+      document.getElementById("policy-notes").textContent = data.eligibility_notes || "No additional notes available.";
+      
+      if (data.sample_plan_section_title) document.getElementById("sample-plan-title").textContent = data.sample_plan_section_title;
+      if (data.premium_details) document.getElementById("policy-premium").textContent = data.premium_details;
+      if (data.plan_term_details) document.getElementById("policy-term").textContent = data.plan_term_details;
+      if (data.maturity_details) document.getElementById("policy-maturity").textContent = data.maturity_details;
     } catch(e) { /* silent — static content already showing */ }
   })();
   </script>

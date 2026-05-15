@@ -654,9 +654,30 @@ li {
   padding: 2.5rem 0;
   text-align: center;
   background: var(--nav-bg);
-  color: rgba(255, 255, 255, 0.55);
+  color: #ffffff;
   font-size: var(--text-sm);
   letter-spacing: 0.01em;
+}
+
+.site-footer p {
+  color: #ffffff;
+}
+
+.whatsapp-link {
+  display: inline-block;
+  margin-top: 0.5rem;
+  color: #ffffff;
+  text-decoration: none;
+  font-size: var(--text-sm);
+  letter-spacing: 0.01em;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s var(--ease-out), color 0.2s var(--ease-out);
+}
+
+.whatsapp-link:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
 }
 
 /* ── Mobile nav ────────────────────────────────────────────────────────── */

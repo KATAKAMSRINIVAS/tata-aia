@@ -325,13 +325,54 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ── Dropdown setup for Policy Selected field ──────────────────────────────────
+  // Convert readonly input to select dropdown on page load
+  if (policyField && policyField.tagName === "INPUT") {
+    const select = document.createElement("select");
+    select.id = "policy";
+    select.name = "policy";
+    select.required = true;
+    select.style.width = "100%";
+    select.style.padding = "0.75rem";
+    select.style.fontSize = "1rem";
+    select.style.border = "1px solid #cbd5e1";
+    select.style.borderRadius = "8px";
+    select.style.fontFamily = "Inter, system-ui, sans-serif";
+
+    // Add default option
+    const defaultOption = document.createElement("option");
+    defaultOption.value = "";
+    defaultOption.textContent = "Select a policy...";
+    select.appendChild(defaultOption);
+
+    // Add all 4 policies
+    Object.entries(policyTitles).forEach(([slug, title]) => {
+      const option = document.createElement("option");
+      option.value = title;
+      option.textContent = title;
+      select.appendChild(option);
+    });
+
+    // Replace input with select
+    policyField.replaceWith(select);
+    const newPolicyField = document.getElementById("policy");
+
+    // Check URL params for pre-selected policy (from "I'm Interested" button)
+    const urlParams = new URLSearchParams(window.location.search);
+    const selectedPolicyParam = urlParams.get("policy");
+    if (selectedPolicyParam && policyTitles[selectedPolicyParam]) {
+      newPolicyField.value = policyTitles[selectedPolicyParam];
+    }
+  }
+
   // ── Policy card click → auto-fill contact form policy field ─────────────────
   document.querySelectorAll(".policy-card").forEach((card) => {
     card.addEventListener("click", (e) => {
       if (e.target.tagName === "BUTTON") return;
       const slug = card.dataset.policy;
-      if (slug && policyField) {
-        policyField.value = policyTitles[slug] || "";
+      const policySelect = document.getElementById("policy");
+      if (slug && policySelect && policySelect.tagName === "SELECT") {
+        policySelect.value = policyTitles[slug] || "";
       }
     });
   });
@@ -348,12 +389,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const nameVal   = document.getElementById("name").value.trim();
     const emailVal  = document.getElementById("email").value.trim();
     const phoneVal  = document.getElementById("phone").value.trim();
-    const policyVal = policyField.value.trim();
+    const policySelect = document.getElementById("policy");
+    const policyVal = policySelect ? policySelect.value.trim() : "";
 
     const slugByTitle = Object.fromEntries(
       Object.entries(policyTitles).map(([k, v]) => [v, k])
     );
-    const policySlug = slugByTitle[policyVal] || selectedPolicy || null;
+    const policySlug = slugByTitle[policyVal] || null;
 
     let categoryId = null;
     if (policySlug) {
@@ -408,7 +450,8 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Lead inserted:", insertData);
       showMessage(successMessage, "Thank you! Your request has been submitted successfully.", "#047857");
       form.reset();
-      policyField.value = "";
+      const policySelect = document.getElementById("policy");
+      if (policySelect) policySelect.value = "";
     }
   });
 

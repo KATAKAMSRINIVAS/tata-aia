@@ -153,7 +153,13 @@
           <input id="phone" name="phone" type="tel" required placeholder="+91 98765 43210" />
 
           <label for="policy">Policy Selected</label>
-          <input id="policy" name="policy" type="text" readonly placeholder="Select a policy from above" />
+          <select id="policy" name="policy" required>
+            <option value="">Select a policy...</option>
+            <option value="Term Plans">Term Plans</option>
+            <option value="Savings Plans">Savings Plans</option>
+            <option value="Children Plans">Children Plans</option>
+            <option value="Retirement Plans">Retirement Plans</option>
+          </select>
 
           <button type="submit" class="cta-button submit-button">Submit</button>
           <p class="success-message hidden">Thank you! Your request has been submitted successfully.</p>

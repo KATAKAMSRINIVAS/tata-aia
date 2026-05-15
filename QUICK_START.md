@@ -22,7 +22,32 @@
 
 ---
 
-## 📋 What You Get
+## �️ Admin Portal Setup
+
+### Step 1: Create Policy Leads Table
+1. Open [Supabase Dashboard](https://app.supabase.com)
+2. Navigate to your project → **SQL Editor**
+3. Open file: `supabase/migrations/20260515000000_create_policy_leads_table.sql`
+4. Copy entire content → Paste into SQL Editor
+5. Click **Execute** button
+6. ✅ Policy leads table created with proper permissions
+
+### Step 2: Access Admin Portal
+1. Open `admin.html` in your browser
+2. View all contact form submissions
+3. Export leads to Excel format
+4. Update lead status (New → Contacted → Closed)
+
+### Admin Features
+- 📊 **Dashboard Stats**: Total leads, new leads, this month's leads
+- 📋 **Leads Table**: View all submissions with contact details
+- 📥 **Excel Export**: Download leads as `.xlsx` file
+- 🔄 **Status Updates**: Mark leads as contacted or closed
+- 🔍 **Real-time Data**: Auto-refresh from Supabase database
+
+---
+
+## �📋 What You Get
 
 ### 4 Enhanced Brochure Sections
 

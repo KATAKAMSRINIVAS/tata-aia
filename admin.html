@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Portal - TATA-AIA Insurance Leads</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="header-content">
+        <div class="logo">
+          <h1>TATA-AIA Insurance</h1>
+          <p>Admin Portal - Lead Management</p>
+        </div>
+        <nav class="main-nav">
+          <a href="index.html">← Back to Main Site</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section id="admin-dashboard" class="section">
+      <div class="container">
+        <div class="admin-header">
+          <h2>Policy Leads Dashboard</h2>
+          <div class="admin-actions">
+            <button id="refresh-btn" class="primary-button">Refresh Data</button>
+            <button id="export-excel-btn" class="secondary-button">Export to Excel</button>
+          </div>
+        </div>
+
+        <div class="stats-cards">
+          <div class="stat-card">
+            <h3>Total Leads</h3>
+            <div id="total-leads" class="stat-number">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>New Leads</h3>
+            <div id="new-leads" class="stat-number">0</div>
+          </div>
+          <div class="stat-card">
+            <h3>This Month</h3>
+            <div id="month-leads" class="stat-number">0</div>
+          </div>
+        </div>
+
+        <div class="leads-table-container">
+          <table id="leads-table" class="leads-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Policy Selected</th>
+                <th>Status</th>
+                <th>Submitted At</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="leads-tbody">
+              <tr>
+                <td colspan="8" class="loading">Loading leads...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="message" class="message hidden"></div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="footer-content">
+        <p>&copy; 2026 TATA-AIA Insurance. Admin Portal.</p>
+        <p>K. Srinivasa Rao - Insurance Advisor</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="supabase-config.js"></script>
+  <script src="script.js"></script>
+</body>
+</html>

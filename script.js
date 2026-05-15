@@ -463,3 +463,190 @@ document.addEventListener("DOMContentLoaded", () => {
     setTimeout(() => el.classList.add("hidden"), 15000);
   }
 });
+
+// ── Admin Portal Functionality ──────────────────────────────────────────────
+document.addEventListener("DOMContentLoaded", () => {
+  // Only run admin code if we're on the admin page
+  if (!document.getElementById("leads-table")) return;
+
+  const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  const leadsTable = document.getElementById("leads-tbody");
+  const totalLeadsEl = document.getElementById("total-leads");
+  const newLeadsEl = document.getElementById("new-leads");
+  const monthLeadsEl = document.getElementById("month-leads");
+  const refreshBtn = document.getElementById("refresh-btn");
+  const exportBtn = document.getElementById("export-excel-btn");
+  const messageEl = document.getElementById("message");
+
+  // ── Load leads from Supabase ──────────────────────────────────────────────
+  async function loadLeads() {
+    try {
+      const { data: leads, error } = await sb
+        .from("policy_leads")
+        .select("*")
+        .order("submitted_at", { ascending: false });
+
+      if (error) throw error;
+
+      displayLeads(leads);
+      updateStats(leads);
+    } catch (err) {
+      console.error("Error loading leads:", err);
+      showAdminMessage("Error loading leads: " + (err.message || err), "error");
+      leadsTable.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--muted);">Unable to load leads. Check console for details.</td></tr>';
+    }
+  }
+
+  // ── Display leads in table ───────────────────────────────────────────────
+  function displayLeads(leads) {
+    if (!leads || leads.length === 0) {
+      leadsTable.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 2rem; color: var(--muted);">No leads found.</td></tr>';
+      return;
+    }
+
+    const rows = leads.map(lead => {
+      const submittedDate = new Date(lead.submitted_at).toLocaleDateString("en-IN", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit"
+      });
+
+      const statusClass = `status-${lead.status || 'new'}`;
+
+      return `
+        <tr>
+          <td>${lead.id}</td>
+          <td>${lead.name}</td>
+          <td><a href="mailto:${lead.email}">${lead.email}</a></td>
+          <td>${lead.phone || ''}</td>
+          <td>${lead.policy_selected || ''}</td>
+          <td><span class="${statusClass}">${lead.status || 'new'}</span></td>
+          <td>${submittedDate}</td>
+          <td>
+            <button class="action-btn" onclick="updateLeadStatus(${lead.id}, 'contacted')">Contacted</button>
+            <button class="action-btn" onclick="updateLeadStatus(${lead.id}, 'closed')">Closed</button>
+          </td>
+        </tr>
+      `;
+    }).join("");
+
+    leadsTable.innerHTML = rows;
+  }
+
+  // ── Update statistics ────────────────────────────────────────────────────
+  function updateStats(leads) {
+    const total = leads.length;
+    const newLeads = leads.filter(lead => (lead.status || 'new') === 'new').length;
+
+    const now = new Date();
+    const thisMonth = leads.filter(lead => {
+      const submitted = new Date(lead.submitted_at);
+      return submitted.getMonth() === now.getMonth() && submitted.getFullYear() === now.getFullYear();
+    }).length;
+
+    totalLeadsEl.textContent = total;
+    newLeadsEl.textContent = newLeads;
+    monthLeadsEl.textContent = thisMonth;
+  }
+
+  // ── Update lead status ───────────────────────────────────────────────────
+  window.updateLeadStatus = async function(id, status) {
+    try {
+      const { error } = await sb
+        .from("policy_leads")
+        .update({ status: status })
+        .eq("id", id);
+
+      if (error) throw error;
+
+      showAdminMessage(`Lead #${id} marked as ${status}`, "success");
+      loadLeads(); // Refresh the table
+    } catch (err) {
+      console.error("Error updating lead:", err);
+      showAdminMessage("Error updating lead: " + err.message, "error");
+    }
+  };
+
+  // ── Export to Excel ──────────────────────────────────────────────────────
+  async function exportToExcel() {
+    try {
+      const { data: leads, error } = await sb
+        .from("policy_leads")
+        .select("*")
+        .order("submitted_at", { ascending: false });
+
+      if (error) throw error;
+
+      if (!leads || leads.length === 0) {
+        showAdminMessage("No leads to export", "error");
+        return;
+      }
+
+      // Prepare data for Excel
+      const excelData = leads.map(lead => ({
+        ID: lead.id,
+        Name: lead.name,
+        Email: lead.email,
+        Phone: lead.phone || '',
+        "Policy Selected": lead.policy_selected || '',
+        "Category Name": lead.category_name || '',
+        Status: lead.status || 'new',
+        Message: lead.message || '',
+        "Source Page": lead.source_page || '',
+        "Submitted At": new Date(lead.submitted_at).toLocaleString("en-IN")
+      }));
+
+      // Create workbook and worksheet
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.json_to_sheet(excelData);
+
+      // Auto-size columns
+      const colWidths = [
+        { wch: 5 },  // ID
+        { wch: 20 }, // Name
+        { wch: 30 }, // Email
+        { wch: 15 }, // Phone
+        { wch: 20 }, // Policy Selected
+        { wch: 20 }, // Category Name
+        { wch: 10 }, // Status
+        { wch: 30 }, // Message
+        { wch: 15 }, // Source Page
+        { wch: 20 }  // Submitted At
+      ];
+      ws['!cols'] = colWidths;
+
+      // Add worksheet to workbook
+      XLSX.utils.book_append_sheet(wb, ws, "Policy Leads");
+
+      // Generate filename with current date
+      const dateStr = new Date().toISOString().split('T')[0];
+      const filename = `tata_aia_leads_${dateStr}.xlsx`;
+
+      // Save file
+      XLSX.writeFile(wb, filename);
+      showAdminMessage(`Exported ${leads.length} leads to ${filename}`, "success");
+
+    } catch (err) {
+      console.error("Error exporting to Excel:", err);
+      showAdminMessage("Error exporting to Excel: " + err.message, "error");
+    }
+  }
+
+  // ── Show admin message ───────────────────────────────────────────────────
+  function showAdminMessage(text, type) {
+    messageEl.textContent = text;
+    messageEl.className = `message ${type}`;
+    messageEl.classList.remove("hidden");
+    setTimeout(() => messageEl.classList.add("hidden"), 5000);
+  }
+
+  // ── Event listeners ─────────────────────────────────────────────────────
+  refreshBtn.addEventListener("click", loadLeads);
+  exportBtn.addEventListener("click", exportToExcel);
+
+  // ── Initial load ────────────────────────────────────────────────────────
+  loadLeads();
+});

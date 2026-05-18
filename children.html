@@ -80,6 +80,7 @@
     <div id="eligibility-notes-container" style="display:block;margin-top:1rem;padding:0.75rem;background:rgba(30,58,138,0.04);border-left:3px solid #1E3A8A;border-radius:6px;">
       <h3 style="margin-top:0;font-size:0.95rem;color:#1E3A8A;">Notes:</h3>
       <p id="policy-notes" style="margin-bottom:0;font-size:0.95rem;"></p>
+      <img id="policy-note-image" alt="Illustration" style="display:none;max-width:100%;margin-top:0.5rem;border-radius:6px;">
     </div>
     
     <div style="margin:1rem 0;padding:1rem;background:rgba(30,58,138,0.04);border-left:4px solid #1E3A8A;border-radius:8px;">
@@ -131,6 +132,15 @@
 
   function getSB() {
     return window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+
+  function showNoteImage(url) {
+    var img = document.getElementById("policy-note-image");
+    if (!url || typeof url !== "string") { img.style.display = "none"; img.src = ""; return; }
+    var trimmed = url.trim();
+    if (!trimmed) { img.style.display = "none"; img.src = ""; return; }
+    if (/\.(jpe?g|png)(\?|#|$)/i.test(trimmed)) { img.src = trimmed; img.style.display = "block"; }
+    else { img.style.display = "none"; img.src = ""; }
   }
 
   // Static fallback content — shown immediately
@@ -264,7 +274,27 @@
       
       if (data.eligibility_details) document.getElementById("policy-eligibility").textContent = data.eligibility_details;
       
-      document.getElementById("policy-notes").textContent = data.eligibility_notes || "No additional notes available.";
+      (function(){
+        var rawNotes = data.eligibility_notes || "";
+        var src = (data.eligibility_note_image_url || "");
+        if (!src && typeof rawNotes === "string") {
+          var m = rawNotes.match(/https?:\/\/\S+?\.(?:jpe?g|png)(?:[?#]\S*)?/i);
+          if (m) src = m[0];
+        }
+        var notesText = rawNotes;
+        if (src) {
+          try {
+            notesText = notesText.replace(src, "");
+            notesText = notesText.replace(/["'“”‘’]\s*$/, "");
+            notesText = notesText.replace(/\s+["'“”‘’]$/, "");
+            notesText = notesText.replace(/\s*[:\-]\s*$/, "");
+            notesText = notesText.trim();
+          } catch(e) { notesText = rawNotes; }
+        }
+        if (!notesText) notesText = "No additional notes available.";
+        document.getElementById("policy-notes").textContent = notesText;
+        showNoteImage(src);
+      })();
       if (data.premium_details) document.getElementById("policy-premium").textContent = data.premium_details;
       if (data.plan_term_details) document.getElementById("policy-term").textContent = data.plan_term_details;
       if (data.maturity_details) document.getElementById("policy-maturity").textContent = data.maturity_details;
